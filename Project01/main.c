@@ -1,4 +1,5 @@
 #include <sys/utsname.h>
+#include <sys/sysinfo.h>
 #include <sys/types.h>
 #include <sys/wait.h>
 #include <sys/stat.h>
@@ -9,6 +10,7 @@
 #include <stdio.h>
 #include <fcntl.h>
 #include <ctype.h>
+#include <time.h>
 
 int valid_time_interval(const char* nptr);
 
@@ -32,6 +34,7 @@ int main(int argc, char const *argv[])
 				// verify time intervals
 				int status;
 				int invalid_intervals = 0;
+				float total_interval = 0;
 				for (int i=2; i<argc; i++)
 				{
 					status = valid_time_interval(argv[i]);
@@ -40,13 +43,17 @@ int main(int argc, char const *argv[])
 						printf("sleep: invalid time interval '%s'\n", argv[i]);
 						invalid_intervals = 1;
 					}
+					else
+					{
+						total_interval += atof(argv[i]);
+					}
 				}
 				// invalid intervals provided, exit with failure
 				if (invalid_intervals) exit(1);
 				// valid intervals provided
 				else
 				{
-					for (int i=2; i<argc; i++) sleep(atoi(argv[i]));
+					usleep(total_interval * 1000000);
 				}
 			}
 		}
@@ -174,6 +181,21 @@ int main(int argc, char const *argv[])
 				}
 			}
 		}
+		// uptime
+		else if (!strcmp(command, "uptime"))
+		{
+			struct sysinfo s_info;
+			if (!sysinfo(&s_info))
+			{
+				// printf("%ld", ctime(s_info.uptime));
+				printf("%ld", s_info.uptime);
+			}
+			else
+			{
+				printf("something goes wrong with 'uptime'\n");
+				exit(1);
+			}
+		}
 	}
 	return 0;
 }
@@ -182,10 +204,13 @@ int valid_time_interval(const char* nptr)
 	if (nptr != NULL)
 	{
 		int i = 0;
+		int points = 0;
 		while (nptr[i] != '\0')
 		{
 			// is a non valid numeric character
-			if (!isdigit(nptr[i])) return 2;
+			if (nptr[i] == '.') points++;
+			else if (nptr[i] < '0' || nptr[i] > '9') return 2;
+			if (points > 1) return 2;
 			i++;
 		}
 		return 0; // valid number
