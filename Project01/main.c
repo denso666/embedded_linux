@@ -11,6 +11,8 @@
 #include <fcntl.h>
 #include <ctype.h>
 #include <time.h>
+#include <pwd.h>
+#include <grp.h>
 
 int valid_time_interval(const char* nptr);
 
@@ -206,7 +208,6 @@ int main(int argc, char const *argv[])
 		{
 			if (argc > 2)
 			{
-				int status;
 				struct stat st;
 				
 				if (stat(argv[2], &st) == -1)
@@ -223,6 +224,70 @@ int main(int argc, char const *argv[])
 			else
 			{
 				printf("mkdir: missing operand\n");
+				exit(1);
+			}
+		}
+		// chown	-> OK
+		else if (!strcmp(command, "chown"))
+		{
+			if (argc == 5)
+			{
+				struct passwd* pwd;
+				struct group* grp;
+				struct stat st;
+
+				// valid file
+				if (stat(argv[2], &st) != 0)
+				{
+					printf("chown: invalid file: '%s'\n", argv[2]);
+					exit(1);
+				}
+				// valid group
+				grp = getgrnam(argv[3]);
+				if (!grp)
+				{
+					printf("chown: invalid group: '%s'\n", argv[3]);
+					exit(1);
+				}
+				// valid user
+				pwd = getpwnam(argv[4]);
+				if (!pwd)
+				{
+					printf("chown: invalid user: '%s'\n", argv[4]);
+					exit(1);
+				}
+
+				if (chown(argv[2], pwd->pw_uid, grp->gr_gid) != 0)
+				{
+					printf("something goes wrong with 'chown'\n");
+					exit(1);
+				}
+			}
+			else
+			{
+				printf("chown: missing operand\n");
+				printf("chown: -path -group -user\n");
+				exit(1);
+			}
+		}
+		// chmod 	->
+		else if (!strcmp(command, "chmod"))
+		{
+			if (argc == 4)
+			{
+				struct stat st;
+
+				if (stat(argv[2], &st) != 0)
+				{
+					printf("chmod: invalid file: '%s'\n", argv[2]);
+					exit(1);
+				}
+				
+			}
+			else
+			{
+				printf("chmod: missing operand\n");
+				printf("chown: -path -permissions\n");
 				exit(1);
 			}
 		}
