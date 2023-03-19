@@ -16,10 +16,10 @@ int valid_time_interval(const char* nptr);
 
 int main(int argc, char const *argv[])
 {
-	const char* command = argv[1];
 	if (argc < 2) printf("No command provide :(\n");
 	else
 	{
+		const char* command = argv[1];
 		// sleep 	-> OK
 		if (!strcmp(command, "sleep"))
 		{
@@ -34,7 +34,7 @@ int main(int argc, char const *argv[])
 				// verify time intervals
 				int status;
 				int invalid_intervals = 0;
-				float total_interval = 0;
+				int total_interval = 0;
 				for (int i=2; i<argc; i++)
 				{
 					status = valid_time_interval(argv[i]);
@@ -45,7 +45,7 @@ int main(int argc, char const *argv[])
 					}
 					else
 					{
-						total_interval += atof(argv[i]);
+						total_interval += atoi(argv[i]);
 					}
 				}
 				// invalid intervals provided, exit with failure
@@ -53,13 +53,19 @@ int main(int argc, char const *argv[])
 				// valid intervals provided
 				else
 				{
-					usleep(total_interval * 1000000);
+					sleep(total_interval);
 				}
 			}
 		}
-		// uname 	-> 
+		// uname 	-> OK
 		else if (!strcmp(command, "uname"))
 		{
+			// extra operands
+			if (argc > 2)
+			{
+				printf("uname: extra operand '%s'\n", argv[2]);
+				exit(1);
+			}
 			struct utsname buf;
 			if (!uname(&buf))
 			{
@@ -161,7 +167,6 @@ int main(int argc, char const *argv[])
 			}
 			else
 			{
-				// need to read /proc/modules
 				int fd = open("/proc/modules", O_RDONLY);
 				if (fd)
 				{
@@ -196,6 +201,32 @@ int main(int argc, char const *argv[])
 				exit(1);
 			}
 		}
+		// mkdir	-> OK
+		else if (!strcmp(command, "mkdir"))
+		{
+			if (argc > 2)
+			{
+				int status;
+				struct stat st;
+				
+				if (stat(argv[2], &st) == -1)
+				{
+					mkdir(argv[2], S_IRWXU | S_IRWXG | S_IROTH | S_IXOTH);
+					printf("mkdir: created directory '%s'\n", argv[2]);
+				}
+				else
+				{
+					printf("mkdir: cannot create directory '%s': File or directory exists\n", argv[2]);
+					exit(1);
+				}
+			}
+			else
+			{
+				printf("mkdir: missing operand\n");
+				exit(1);
+			}
+		}
+		// command not found
 	}
 	return 0;
 }
