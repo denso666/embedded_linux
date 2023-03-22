@@ -2,5 +2,6 @@
 *.a
 *.o
 *.out
-*bin*
 *test*
+**/objs/*
+**/links/*
