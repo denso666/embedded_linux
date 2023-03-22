@@ -109,7 +109,7 @@ int main(int argc, char const *argv[])
 			}
 			else __lsmod__();
 		}
-		// uptime	-> Convert time!
+		// uptime	-> OK
 		else if (!strcmp(command, "uptime"))
 		{
 			// extra arguments
@@ -306,8 +306,12 @@ void __uptime__(void)
 	struct sysinfo s_info;
 	if (!sysinfo(&s_info))
 	{
-		// printf("%ld", ctime(s_info.uptime));
-		printf("%ld", s_info.uptime);
+		long seconds = s_info.uptime;
+		long hours = seconds/3600;
+		seconds %= 3600;
+		long minutes = seconds/60;
+		seconds %= 60;
+		printf("up %ld hours, %ld minutes, %ld seconds\n", hours, minutes, seconds);
 		exit(0);
 	}
 	else
