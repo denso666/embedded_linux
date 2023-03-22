@@ -24,15 +24,38 @@ void __uname__(void)
 	struct utsname buf;
 	if (!uname(&buf))
 	{
-		printf("Name\t\t%s\n", buf.sysname);
-		printf("Release\t\t%s\n", buf.release);
-		printf("Version\t\t%s\n", buf.version);
-		printf("Proccesor\t%s\n", buf.machine);
+		fprintf(stdout, "Name\t\t%s\n", buf.sysname);
+		fprintf(stdout, "Release\t\t%s\n", buf.release);
+		fprintf(stdout, "Version\t\t%s\n", buf.version);
+		fprintf(stdout, "Proccesor\t%s\n", buf.machine);
 		exit(0);
 	}
 	else
 	{
-		perror("something goes wrong with 'uname'");
+		perror("uname");
+		exit(1);
+	}
+}
+
+void __ls__(const char* path)
+{
+	DIR *d;
+	struct dirent *dir;
+	d = opendir(path);
+	if (d)
+	{	
+		fprintf(stdout, "%s:\n", path);
+		while ((dir = readdir(d)) != NULL)
+		{
+			fprintf(stdout, "%s\n", dir->d_name);
+		}
+		closedir(d);
+		fprintf(stdout, "\n");
+		exit(0);
+	}
+	else
+	{
+		perror("ls");
 		exit(1);
 	}
 }
@@ -43,18 +66,15 @@ void __sleep__(const int intc, const char* intv[])
 	int status;
 	int invalid_intervals = 0;
 	int total_interval = 0;
-	for (int i=2; i-2<intc; i++)
+	for (int i=1; i<intc; i++)
 	{
 		status = valid_time_interval(intv[i]);
 		if (status == 2)
 		{
-			printf("sleep: invalid time interval '%s'\n", intv[i]);
+			fprintf(stdout, "sleep: invalid time interval '%s'\n", intv[i]);
 			invalid_intervals = 1;
 		}
-		else
-		{
-			total_interval += atoi(intv[i]);
-		}
+		else total_interval += atoi(intv[i]);
 	}
 	// invalid intervals provided, exit with failure
 	if (invalid_intervals) exit(1);
@@ -63,9 +83,10 @@ void __sleep__(const int intc, const char* intv[])
 		if (sleep(total_interval) < 0)
 		{
 			// error on execution
-			perror("something goes wrong with 'sleep'");
+			perror("sleep");
 			exit(1);
 		}
+		else exit(0);
 	}
 }
 
@@ -80,7 +101,7 @@ void __cat__(const char* path)
 	{
 		if ((st.st_mode & S_IFMT) == S_IFDIR)
 		{
-			printf("cat: %s: Is a directory\n", path);
+			fprintf(stdout, "cat: %s: Is a directory\n", path);
 			exit(1); // error: is a directory
 		}
 		else
@@ -90,14 +111,15 @@ void __cat__(const char* path)
 			buf = (char*)malloc(sizeof(char)*size);
 			read(fd, (void*)buf, size);
 			close(fd);
-			write(0, buf, size);
+
+			fprintf(stdout, "%s", buf);
 			free(buf);
 			exit(0);
 		}
 	}
 	else
 	{
-		printf("cat: %s: No such file or directory\n", path);
+		perror("cat");
 		exit(1); // error: file or directory not found
 	}
 }
@@ -110,15 +132,15 @@ void __lsmod__(void)
 		char* buf = malloc(1);
 		while (read(fd, buf, 1))
 		{
-			printf("%s", buf);
+			fprintf(stdout, "%s", buf);
 		}
 		close(fd);
 		free(buf);
+		exit(0);
 	}
-	// error on fs /proc/modules
 	else
 	{
-		perror("something goes wrong with 'lsmod'");
+		perror("lsmod");
 		exit(1);
 	}
 }
@@ -133,12 +155,12 @@ void __uptime__(void)
 		seconds %= 3600;
 		long minutes = seconds/60;
 		seconds %= 60;
-		printf("up %ld hours, %ld minutes, %ld seconds\n", hours, minutes, seconds);
+		fprintf(stdout, "up %ld hours, %ld minutes, %ld seconds\n", hours, minutes, seconds);
 		exit(0);
 	}
 	else
 	{
-		perror("something goes wrong with 'uptime'");
+		perror("uptime");
 		exit(1);
 	}
 }
@@ -150,12 +172,12 @@ void __mkdir__(const char* path)
 	{
 		if (!mkdir(path, S_IRWXU | S_IRWXG | S_IROTH | S_IXOTH))
 		{
-			printf("mkdir: created directory '%s'\n", path);
+			fprintf(stdout, "mkdir: created directory '%s'\n", path);
 			exit(0);
 		}
-		else perror("something goes wrong with 'mkdir'");
+		else perror("mkdir");
 	}
-	else printf("mkdir: cannot create directory '%s': File or directory exists\n", path);
+	else fprintf(stderr, "mkdir: cannot create directory '%s': File or directory exists\n", path);
 	exit(1);
 }
 
@@ -166,29 +188,43 @@ void __chown__(const char* path, const char* group, const char* user)
 	struct stat st;
 
 	// valid file
-	if (stat(path, &st) != 0)
+	if (stat(path, &st))
 	{
-		printf("chown: invalid file: '%s'\n", path);
+		perror("chown");
 		exit(1);
 	}
 	// valid group
 	grp = getgrnam(group);
 	if (!grp)
 	{
-		printf("chown: invalid group: '%s'\n", group);
+		printf("chown");
 		exit(1);
 	}
 	// valid user
 	pwd = getpwnam(user);
 	if (!pwd)
 	{
-		printf("chown: invalid user: '%s'\n", user);
+		printf("chown");
 		exit(1);
 	}
 
 	if (chown(path, pwd->pw_uid, grp->gr_gid))
 	{
-		perror("something goes wrong with 'chown'");
+		printf("chown");
 		exit(1);
 	}
+	exit(0);
+}
+
+void __chmod__(const char* path, const char* permissions)
+{
+	struct stat st;
+
+	if (stat(path, &st) != 0)
+	{
+		printf("chmod: invalid file: '%s'\n", path);
+		exit(1);
+	}
+
+	exit(0);
 }

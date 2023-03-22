@@ -2,6 +2,8 @@
 
 int main(int argc, char const *argv[])
 {
+	pid_t child_id;
+	int status;
 	const char* command = argv[0];
 	// sleep 	-> OK
 	if (!strcmp(command, "./sleep"))
@@ -12,7 +14,7 @@ int main(int argc, char const *argv[])
 			printf("sleep: missing operan\n");
 			exit(1);
 		}
-		else __sleep__(argc-2, argv);
+		else __sleep__(argc, argv);
 	}
 	// uname 	-> OK
 	else if (!strcmp(command, "./uname"))
@@ -20,7 +22,7 @@ int main(int argc, char const *argv[])
 		// extra arguments
 		if (argc > 1)
 		{
-			printf("uname: extra operand '%s'\n", argv[2]);
+			printf("uname: extra operand '%s'\n", argv[1]);
 			printf("Usage: uname\n");
 			exit(1);
 		}
@@ -29,30 +31,20 @@ int main(int argc, char const *argv[])
 	// ls 		-> VERIFY
 	else if (!strcmp(command, "./ls"))
 	{
-		const char* path = "./";
-
-		// specific path provided
-		if (argc > 1)
-		{
-			path = argv[1];
-		}
-
-		DIR *d;
-		struct dirent *dir;
-		d = opendir(path);
-		if (d)
-		{	
-			while ((dir = readdir(d)) != NULL)
-			{
-				printf("%s\n", dir->d_name);
-			}
-			closedir(d);
-		}
+		if (argc == 1) __ls__("./");
 		else
 		{
-			printf("ls: cannot access '%s': No such file or directory\n", path);
-			exit(1);
-		}
+			for (int i=1; i<argc; i++)
+			{
+				if ((child_id = fork()) == 0) __ls__(argv[i]);
+				else if (child_id < 0)
+				{
+					perror("fork");
+					exit(1);
+				}
+				else waitpid(child_id, &status, 0);
+			}
+		}		
 	}
 	// cat		-> OK
 	else if (!strcmp(command, "./cat"))
@@ -67,10 +59,15 @@ int main(int argc, char const *argv[])
 		{
 			for (int i=1; i<argc; i++)
 			{
-				if (fork() > 0) __cat__(argv[i]);
+				if ((child_id = fork()) == 0) __cat__(argv[i]);
+				else if (child_id < 0)
+				{
+					perror("fork");
+					exit(1);
+				}
+				else waitpid(child_id, &status, 0);
 			}
 		}
-		
 	}
 	// lsmod 	-> OK
 	else if (!strcmp(command, "./lsmod"))
@@ -109,9 +106,14 @@ int main(int argc, char const *argv[])
 		{
 			for (int i = 1; i<argc; i++)
 			{
-				if (fork() > 0)	__mkdir__(argv[i]);
+				if ((child_id = fork()) == 0) __mkdir__(argv[i]);
+				else if (child_id < 0)
+				{
+					perror("fork");
+					exit(1);
+				}
+				else waitpid(child_id, &status, 0);
 			}
-		
 		}
 	}
 	// chown	-> OK
@@ -129,23 +131,13 @@ int main(int argc, char const *argv[])
 	// chmod 	->
 	else if (!strcmp(command, "./chmod"))
 	{
-		if (argc == 3)
-		{
-			struct stat st;
-
-			if (stat(argv[2], &st) != 0)
-			{
-				printf("chmod: invalid file: '%s'\n", argv[2]);
-				exit(1);
-			}
-			
-		}
-		else
+		if (argc != 3)
 		{
 			printf("chmod: missing operand\n");
 			printf("Usage: chmod -path -permissions\n");
-			exit(1);
+			exit(1);			
 		}
+		else __chmod__(argv[1], argv[2]);
 	}
 	// command not found
 	else
@@ -155,5 +147,3 @@ int main(int argc, char const *argv[])
 	}
 	return 0;
 }
-
-

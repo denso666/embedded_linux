@@ -30,6 +30,13 @@ int valid_time_interval(const char*);
 void __uname__(void);
 
 /**
+ * List directory contents
+ * @param path target directory path
+ * @return null
+ */
+void __ls__(const char*);
+
+/**
  * Delay for a specified amount of time
  * @param intc interval counter
  * @param intv interval values
@@ -58,18 +65,26 @@ void __uptime__(void);
 
 /**
  * Create the Directory(ies), if they do not already exist
- * @param path	target directory name 
+ * @param path target directory name 
  * @return null
  */
 void __mkdir__(const char*);
 
 /**
  * Change the owner and group of a file
- * @param path	target file or directory 
+ * @param path target file or directory 
  * @param group group name
- * @param user	user name
+ * @param user user name
  * @return null
  */
 void __chown__(const char*, const char*, const char*);
+
+/**
+ * Change file mode bits
+ * @param path target file or directory
+ * @param permissions string with new permissions (octal values)
+ * @return null
+ */
+void __chmod__(const char*, const char*);
 
 #endif

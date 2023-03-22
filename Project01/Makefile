@@ -4,22 +4,16 @@ OBJS=./objs
 LNKS=./links
 KREL=$(shell uname -r)
 PWD=$(shell pwd)
+CMDS=sleep uname ls cat lsmod uptime mkdir chown
 
 all: commands
 	gcc ${SRC}/main.c ${OBJS}/commands_${KREL}.o -o ${OBJS}/bin
-	ln -s ${PWD}/objs/bin ${LNKS}/sleep
-	ln -s ${PWD}/objs/bin ${LNKS}/uname
-	ln -s ${PWD}/objs/bin ${LNKS}/ls
-	ln -s ${PWD}/objs/bin ${LNKS}/cat
-	ln -s ${PWD}/objs/bin ${LNKS}/lsmod
-	ln -s ${PWD}/objs/bin ${LNKS}/uptime
-	ln -s ${PWD}/objs/bin ${LNKS}/mkdir
-	ln -s ${PWD}/objs/bin ${LNKS}/chown
+	$(foreach cmd, $(CMDS), ln -s ${PWD}/objs/bin ${LNKS}/$(cmd);)
 
 commands: ${SRC}/commands.c ${HDRS}/commands.h
 	gcc -c ${SRC}/commands.c -o ${OBJS}/commands_${KREL}.o
 
 
 clean:
-	rm ${OBJS}/*
-	rm ${LNKS}/*
+	rm ${OBJS}/* &> /dev/null
+	rm ${LNKS}/* &> /dev/null
