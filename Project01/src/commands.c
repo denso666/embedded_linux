@@ -55,32 +55,32 @@ void __ls__(const char* path)
 	}
 	else
 	{
-		perror("ls");
+		fprintf(stderr, "ls: cannot open directory '%s': %s\n", path, strerror(errno));
 		exit(1);
 	}
 }
 
 void __sleep__(const int intc, const char* intv[])
 {
-	// verify time intervals
 	int status;
 	int invalid_intervals = 0;
-	int total_interval = 0;
+	float total_interval = 0.0;
 	for (int i=1; i<intc; i++)
 	{
+		// valid time intervals format
 		status = valid_time_interval(intv[i]);
 		if (status == 2)
 		{
-			fprintf(stdout, "sleep: invalid time interval '%s'\n", intv[i]);
+			fprintf(stderr, "sleep: invalid time interval '%s'\n", intv[i]);
 			invalid_intervals = 1;
 		}
-		else total_interval += atoi(intv[i]);
+		else total_interval += atof(intv[i]);
 	}
 	// invalid intervals provided, exit with failure
 	if (invalid_intervals) exit(1);
 	else
 	{
-		if (sleep(total_interval) < 0)
+		if (usleep(total_interval * 1000000) < 0)
 		{
 			// error on execution
 			perror("sleep");
@@ -92,35 +92,33 @@ void __sleep__(const int intc, const char* intv[])
 
 void __cat__(const char* path)
 {
-	int fd;
-	int size;
 	struct stat st;
-	char* buf;
-	// exist file or directory?
+	// exist?
 	if (stat(path, &st) != -1)
 	{
+		// is a directory?
 		if ((st.st_mode & S_IFMT) == S_IFDIR)
 		{
-			fprintf(stdout, "cat: %s: Is a directory\n", path);
-			exit(1); // error: is a directory
+			fprintf(stderr, "cat: %s: Is a directory\n", path);
+			exit(1);
 		}
 		else
 		{
-			size = st.st_size;
-			fd = open(path, O_RDONLY);
-			buf = (char*)malloc(sizeof(char)*size);
-			read(fd, (void*)buf, size);
+			int fd = open(path, O_RDONLY);
+			char*  buf = (char*)malloc(1);
+			while (read(fd, buf, 1))
+			{
+				fprintf(stdout, "%s", buf);
+			}
 			close(fd);
-
-			fprintf(stdout, "%s", buf);
 			free(buf);
 			exit(0);
 		}
 	}
 	else
 	{
-		perror("cat");
-		exit(1); // error: file or directory not found
+		fprintf(stderr, "cat: '%s' %s\n", path, strerror(errno));
+		exit(1);
 	}
 }
 
@@ -129,7 +127,7 @@ void __lsmod__(void)
 	int fd = open("/proc/modules", O_RDONLY);
 	if (fd)
 	{
-		char* buf = malloc(1);
+		char* buf = (char*)malloc(1);
 		while (read(fd, buf, 1))
 		{
 			fprintf(stdout, "%s", buf);
@@ -188,29 +186,30 @@ void __chown__(const char* path, const char* group, const char* user)
 	struct stat st;
 
 	// valid file
-	if (stat(path, &st))
+	if (stat(path, &st) == -1)
 	{
 		perror("chown");
 		exit(1);
 	}
-	// valid group
+	// group
 	grp = getgrnam(group);
 	if (!grp)
 	{
-		printf("chown");
+		if (errno != 0) perror("chown");
+		else fprintf( stderr, "chown: the given name or gid was not found\n");
 		exit(1);
 	}
-	// valid user
+	// user
 	pwd = getpwnam(user);
 	if (!pwd)
 	{
-		printf("chown");
+		if (errno != 0) perror("chown");
+		else fprintf( stderr, "chown: the given name or uid was not found\n");
 		exit(1);
 	}
-
 	if (chown(path, pwd->pw_uid, grp->gr_gid))
 	{
-		printf("chown");
+		perror("chown");
 		exit(1);
 	}
 	exit(0);

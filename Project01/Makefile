@@ -13,7 +13,6 @@ all: commands
 commands: ${SRC}/commands.c ${HDRS}/commands.h
 	gcc -c ${SRC}/commands.c -o ${OBJS}/commands_${KREL}.o
 
-
 clean:
 	rm ${OBJS}/* &> /dev/null
 	rm ${LNKS}/* &> /dev/null
