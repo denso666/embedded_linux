@@ -13,6 +13,7 @@
 #include <errno.h>
 #include <pwd.h>
 #include <grp.h>
+
 /**
  * Convert string to integer valid interval
  * @param nptr number pointer
@@ -171,7 +172,7 @@ int main(int argc, char const *argv[])
 		// extra arguments
 		if (argc > 1)
 		{
-			printf("uptime: extra operand '%s'\n", argv[2]);
+			printf("uptime: extra operand '%s'\n", argv[1]);
 			printf("Usage: uptime\n");
 			exit(1);
 		}

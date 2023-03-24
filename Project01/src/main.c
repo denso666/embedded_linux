@@ -3,7 +3,7 @@
 int main(int argc, char const *argv[])
 {
 	pid_t child_id;
-	int status;
+	int status, group_status;
 	const char* command = argv[0];
 	// sleep 	-> OK
 	if (!strcmp(command, "./sleep"))
@@ -34,6 +34,7 @@ int main(int argc, char const *argv[])
 		if (argc == 1) __ls__("./");
 		else
 		{
+			group_status = 0;
 			for (int i=1; i<argc; i++)
 			{
 				if ((child_id = fork()) == 0) __ls__(argv[i]);
@@ -42,8 +43,13 @@ int main(int argc, char const *argv[])
 					perror("fork");
 					exit(1);
 				}
-				else waitpid(child_id, &status, 0);
+				else 
+				{
+					waitpid(child_id, &status, 0);
+					group_status = group_status || status;
+				}
 			}
+			return group_status;
 		}		
 	}
 	// cat		-> OK
@@ -57,6 +63,7 @@ int main(int argc, char const *argv[])
 		}
 		else
 		{
+			group_status = 0;
 			for (int i=1; i<argc; i++)
 			{
 				if ((child_id = fork()) == 0) __cat__(argv[i]);
@@ -65,8 +72,13 @@ int main(int argc, char const *argv[])
 					perror("fork");
 					exit(1);
 				}
-				else waitpid(child_id, &status, 0);
+				else 
+				{
+					waitpid(child_id, &status, 0);
+					group_status = group_status || status;
+				}
 			}
+			return group_status;
 		}
 	}
 	// lsmod 	-> OK
@@ -104,6 +116,7 @@ int main(int argc, char const *argv[])
 		}
 		else
 		{
+			group_status = 0;
 			for (int i = 1; i<argc; i++)
 			{
 				if ((child_id = fork()) == 0) __mkdir__(argv[i]);
@@ -112,8 +125,13 @@ int main(int argc, char const *argv[])
 					perror("fork");
 					exit(1);
 				}
-				else waitpid(child_id, &status, 0);
+				else 
+				{
+					waitpid(child_id, &status, 0);
+					group_status = group_status || status;
+				}
 			}
+			return group_status;
 		}
 	}
 	// chown	-> OK
@@ -128,7 +146,7 @@ int main(int argc, char const *argv[])
 		}
 		else __chown__(argv[1], argv[2], argv[3]);
 	}
-	// chmod 	->
+	// chmod 	-> NOT IMPLEMENTED
 	else if (!strcmp(command, "./chmod"))
 	{
 		if (argc != 3)

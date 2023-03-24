@@ -2,6 +2,9 @@
 *.a
 *.o
 *.out
+*bin*
 *test*
 **/objs/*
 **/links/*
+**/release/*.png
+**/release/*.jpg

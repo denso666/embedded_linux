@@ -10,6 +10,7 @@
 #include <unistd.h>
 #include <string.h>
 #include <dirent.h>
+#include <float.h>
 #include <stdio.h>
 #include <fcntl.h>
 #include <ctype.h>
@@ -23,6 +24,12 @@
  * @return On success, zero is returned. On null pointer provided, one is returned. On non valid interval, two is returned
  */
 int valid_time_interval(const char*);
+/**
+ * @brief Verify valid octal string
+ * @param optr octal pointer
+ * @return On success, zero is returned. On null pointer provided, one is returned. On non valid character, two is returned.
+ */
+int onlyOcta(const char*);
 
 /**
  * Print system information
@@ -48,9 +55,9 @@ void __sleep__(const int, const char*[]);
 /**
  * Concatenate files and print on the standard output
  * @param path target file path
- * @return null
+ * @return status of read file
  */
-void __cat__(const char*);
+int __cat__(const char*);
 
 /**
  * Show the status of modules in the Linux Kernel
@@ -72,7 +79,7 @@ void __uptime__(void);
 void __mkdir__(const char*);
 
 /**
- * Change the owner and group of a file
+ * @brief Change the owner and group of a file
  * @param path target file or directory 
  * @param group group name
  * @param user user name
@@ -81,7 +88,7 @@ void __mkdir__(const char*);
 void __chown__(const char*, const char*, const char*);
 
 /**
- * Change file mode bits
+ * @brief Change file mode bits
  * @param path target file or directory
  * @param permissions string with new permissions (octal values)
  * @return null

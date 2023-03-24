@@ -19,6 +19,21 @@ int valid_time_interval(const char* nptr)
 	return 1; // null ptr provided
 }
 
+int onlyOctal(const char* optr)
+{
+    if (optr != NULL)
+    {
+        int i = 0;
+        while (optr[i] != '\0')
+        {
+            if (optr[i] < '0' || optr[i] > '7') return 2; // invalid character provided
+            i++;
+        }
+        return 0; // valid octal number
+    }
+    return 1; // null provided 
+}
+
 void __uname__(void)
 {
 	struct utsname buf;
@@ -90,7 +105,7 @@ void __sleep__(const int intc, const char* intv[])
 	}
 }
 
-void __cat__(const char* path)
+int __cat__(const char* path)
 {
 	struct stat st;
 	// exist?
@@ -105,14 +120,22 @@ void __cat__(const char* path)
 		else
 		{
 			int fd = open(path, O_RDONLY);
-			char*  buf = (char*)malloc(1);
-			while (read(fd, buf, 1))
+			if (fd)
 			{
-				fprintf(stdout, "%s", buf);
+				char* buf = (char*)malloc(1);
+				while (read(fd, buf, 1))
+				{
+					fprintf(stdout, "%s", buf);
+				}
+				close(fd);
+				free(buf);
+				exit(0);
 			}
-			close(fd);
-			free(buf);
-			exit(0);
+			else
+			{
+				fprintf(stderr, "cat: '%s' %s\n", path, strerror(errno));
+				exit(1);
+			}
 		}
 	}
 	else
@@ -221,9 +244,32 @@ void __chmod__(const char* path, const char* permissions)
 
 	if (stat(path, &st) != 0)
 	{
-		printf("chmod: invalid file: '%s'\n", path);
-		exit(1);
+	    fprintf(stderr, "chmod: %s: %s\n", path, strerror(errno));
+        exit(1);
 	}
-
-	exit(0);
+	else
+    {
+        if (strlen(permissions) == 3 && !onlyOctal(permissions))
+        {
+            int p = strtol(permissions, 0, 8);
+            if (chmod(path, p) != 0)
+            {
+                perror("chmod");
+                exit(1);
+            }
+            exit(0);
+        }
+        else
+        {
+            fprintf(stderr, "chmod: %s: invalid string permissions\n", permissions);
+            exit(1);
+        }
+    }
 }
+
+
+
+
+
+
+

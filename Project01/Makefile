@@ -4,7 +4,7 @@ OBJS=./objs
 LNKS=./links
 KREL=$(shell uname -r)
 PWD=$(shell pwd)
-CMDS=sleep uname ls cat lsmod uptime mkdir chown
+CMDS=sleep uname ls cat lsmod uptime mkdir chown chmod
 
 all: commands
 	gcc ${SRC}/main.c ${OBJS}/commands_${KREL}.o -o ${OBJS}/bin
