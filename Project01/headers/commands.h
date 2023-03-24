@@ -15,6 +15,8 @@
 #include <fcntl.h>
 #include <ctype.h>
 #include <errno.h>
+#include <utime.h>
+#include <time.h>
 #include <pwd.h>
 #include <grp.h>
 
@@ -95,4 +97,10 @@ void __chown__(const char*, const char*, const char*);
  */
 void __chmod__(const char*, const char*);
 
+/**
+ * @brief Change file timestamps
+ * @param path target file
+ * @return status of creation or status change
+ */
+void __touch__(const char*);
 #endif

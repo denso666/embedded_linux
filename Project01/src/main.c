@@ -157,7 +157,17 @@ int main(int argc, char const *argv[])
 		}
 		else __chmod__(argv[1], argv[2]);
 	}
-	// command not found
+	else if (!strcmp(command, "./touch"))
+    {
+        if (argc != 2)
+        {
+            fprintf(stderr, "touch: missing operand\n");
+            fprintf(stderr, "Usage: touch -path\n");
+            exit(1);
+        }
+        else __touch__(argv[1]);
+    }
+    // command not found
 	else
 	{
 		printf("'%s' command not found\n", argv[0]);

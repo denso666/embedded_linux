@@ -21,17 +21,17 @@ int valid_time_interval(const char* nptr)
 
 int onlyOctal(const char* optr)
 {
-    if (optr != NULL)
-    {
-        int i = 0;
-        while (optr[i] != '\0')
-        {
-            if (optr[i] < '0' || optr[i] > '7') return 2; // invalid character provided
-            i++;
-        }
-        return 0; // valid octal number
-    }
-    return 1; // null provided 
+	if (optr != NULL)
+	{
+		int i = 0;
+		while (optr[i] != '\0')
+		{
+			if (optr[i] < '0' || optr[i] > '7') return 2; // invalid character provided
+			i++;
+		}
+		return 0; // valid octal number
+	}
+	return 1; // null provided 
 }
 
 void __uname__(void)
@@ -244,30 +244,68 @@ void __chmod__(const char* path, const char* permissions)
 
 	if (stat(path, &st) != 0)
 	{
-	    fprintf(stderr, "chmod: %s: %s\n", path, strerror(errno));
-        exit(1);
+		fprintf(stderr, "chmod: %s: %s\n", path, strerror(errno));
+		exit(1);
 	}
 	else
+	{
+		if (strlen(permissions) == 3 && !onlyOctal(permissions))
+		{
+			int p = strtol(permissions, 0, 8);
+			if (chmod(path, p) != 0)
+			{
+				perror("chmod");
+				exit(1);
+			}
+			exit(0);
+		}
+		else
+		{
+			fprintf(stderr, "chmod: %s: invalid string permissions\n", permissions);
+			exit(1);
+		}
+	}
+}
+
+void __touch__(const char* path)
+{
+    struct stat st;
+	// exist
+    if (!stat(path, &st))
     {
-        if (strlen(permissions) == 3 && !onlyOctal(permissions))
+        // is a directory
+        if ((st.st_mode & S_IFMT) == S_IFDIR)
         {
-            int p = strtol(permissions, 0, 8);
-            if (chmod(path, p) != 0)
+            fprintf(stderr, "touch: %s: Is a directory\n", path);
+            exit(1);
+        }
+        // update last access and modify date
+        else
+        {
+            struct utimbuf new_time;
+            time_t t = time(NULL);
+            new_time.actime = t;
+            new_time.modtime = t;
+            
+            if (utime(path, &new_time) != 0)
             {
-                perror("chmod");
+                fprintf(stderr, "touch: %s: %s\n", path, strerror(errno));
                 exit(1);
             }
             exit(0);
         }
-        else
+    }
+    // create file
+    else
+    {
+        if (creat(path, S_IRUSR | S_IWUSR | S_IROTH | S_IRGRP) < 0)
         {
-            fprintf(stderr, "chmod: %s: invalid string permissions\n", permissions);
+            perror("touch");
             exit(1);
         }
-    }
+        exit(0);
+    }    
 }
-
-
 
 
 
