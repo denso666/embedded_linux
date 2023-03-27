@@ -21,11 +21,12 @@
 #include <grp.h>
 
 /**
- * Convert string to integer valid interval
+ * @brief Convert string to integer valid interval
  * @param nptr number pointer
  * @return On success, zero is returned. On null pointer provided, one is returned. On non valid interval, two is returned
  */
 int valid_time_interval(const char*);
+
 /**
  * @brief Verify valid octal string
  * @param optr octal pointer
@@ -103,4 +104,13 @@ void __chmod__(const char*, const char*);
  * @return status of creation or status change
  */
 void __touch__(const char*);
+
+/**
+ * @brief
+ * @param pid process id
+ * @param sig SIG to send
+ * @return delivery status
+ */
+void __kill__(const char*, const char*);
+
 #endif
