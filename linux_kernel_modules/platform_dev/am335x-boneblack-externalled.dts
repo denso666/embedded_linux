@@ -1,0 +1,41 @@
+/*
+ * @brief Overlay designed to BeagleBone Black board
+ * @author Felipe Alejandro Jimenez Castillo
+ * @date 27/06/2023
+*/
+/dts-v1/;
+/plugin/;
+
+#include <dt-bindings/gpio/gpio.h>
+#include <dt-bindings/leds/common.h>
+#include <dt-bindings/pinctrl/am33xx.h>
+
+&{/chosen} {
+	overlays {
+		myoverlayNew.kernel = __TIMESTAMP__;
+	};
+};
+
+
+&{/} {
+	leds {
+		compatible = "dle,externalled";
+		pinctrl-names = "default";
+		pinctrl-0 = <&externalleds_pinctl>;
+		status = "okay";
+		ext-0-gpio = <&gpio1 12 GPIO_ACTIVE_HIGH>;
+		ext-1-gpio = <&gpio0 26 GPIO_ACTIVE_HIGH>;
+		ext-2-gpio = <&gpio1 14 GPIO_ACTIVE_HIGH>;
+		ext-3-gpio = <&gpio0 22 GPIO_ACTIVE_HIGH>;
+	};
+};
+&am33xx_pinmux {
+    externalleds_pinctl: externalleds_pinctl {
+        pinctrl-single,pins = <
+			AM33XX_PADCONF(AM335X_PIN_GPMC_AD12, PIN_OUTPUT_PULLDOWN, MUX_MODE7)
+			AM33XX_PADCONF(AM335X_PIN_GPMC_AD10, PIN_OUTPUT_PULLDOWN, MUX_MODE7)
+			AM33XX_PADCONF(AM335X_PIN_GPMC_AD14, PIN_OUTPUT_PULLDOWN, MUX_MODE7)
+			AM33XX_PADCONF(AM335X_PIN_GPMC_AD8, PIN_OUTPUT_PULLDOWN, MUX_MODE7)
+        >;
+	};
+};
