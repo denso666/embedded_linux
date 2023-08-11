@@ -1,0 +1,11 @@
+[Unit]
+Description=performance_checker.service
+
+[Service]
+ExecStart=/usr/bin/bash -c "/media/usb-drive/performance_checker /media/usb-drive/"
+#ExecStart=/usr/bin/bash -c "echo $(date) >> /tmp/service.log"
+Restart=always
+RestartSec=5s
+
+[Install]
+WantedBy=multi-user.target

@@ -1,0 +1,39 @@
+#!/usr/bin/bash
+
+## debug
+# set -e
+
+action=$1
+device=$2
+mount_point="/media/usb-drive"
+
+case $action in
+    "add")
+        echo "[$(date '+%H:%M:%S')]: Action add init with device $device" >> /tmp/usb_detect.log
+
+        ## Mount point
+        mkdir -p $mount_point
+        mount /dev/$device $mount_point
+        ## chmod +x /media/usb-drive/*
+
+        if [[ "$(mount | grep $device)" == "" ]]; then
+            echo "[$(date)]: An erro was occured in the mount operation with device $DEVICE" >> /tmp/usb_detect.log
+            exit 1
+        fi
+
+        ## service start
+        systemctl start performance_checker.service
+        echo "[$(date '+%H:%M:%S')]: Action add end with device $device" >> /tmp/usb_detect.log
+    ;;
+    "remove")
+        echo "[$(date '+%H:%M:%S')]: Action remove init with device $device" >> /tmp/usb_detect.log
+        umount $mount_point
+        systemctl stop performance_checker.service
+        echo "[$(date '+%H:%M:%S')]: Action remove end with device $device" >> /tmp/usb_detect.log
+    ;;
+    *)
+        echo "Operation ($action) not found with device $device" >> /tmp/usb_detect.log
+    ;;
+esac
+
+

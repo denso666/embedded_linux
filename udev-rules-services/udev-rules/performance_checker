@@ -1,0 +1,38 @@
+#!/usr/bin/bash
+
+## debug option
+set -e
+
+TIME=$(date '+%d/%m/%Y %H:%M:%S')
+LOG_FILE=status.log
+LOG_DIR=$1
+OUT=$LOG_DIR/$LOG_FILE
+# OUT=/tmp/perf_check.log
+
+## Identifiers
+hostName=$(hostname)
+kernelInfo=$(uname -r)
+hostArch=$(uname -m)
+
+## Memory status
+memTotal=$(cat /proc/meminfo | grep "MemTotal" | tr -d ' ' | cut -d ":" -f 2 | sed -e 's/^[[:space:]]*//')
+memFree=$(cat /proc/meminfo | grep "MemFree" | tr -d ' ' | cut -d ":" -f 2 | sed -e 's/^[[:space:]]*//')
+
+## CPU info
+cpuModel=$(cat /proc/cpuinfo | grep -m 1 "model name" | cut -d ":" -f 2)
+cpuUsage=$(mpstat 1 1 | awk '/Average:/ {print 100 - $NF}')
+## Disk info
+diskSize=$(df -h / | sed 1d | cut -d " " -f 17)
+diskUsed=$(df -h / | sed 1d | cut -d " " -f 22)
+diskAvail=$(df -h / | sed 1d | cut -d " " -f 27)
+
+## LOG
+echo "[$TIME]: Host Name: $hostName" >> $OUT
+echo "[$TIME]: Kernel   : $kernelInfo" >> $OUT
+echo "[$TIME]: Mem Total: $memTotal" >> $OUT
+echo "[$TIME]: Mem Free : $memFree" >> $OUT
+echo "[$TIME]: CPU Model:$cpuModel" >> $OUT
+echo "[$TIME]: CPU Usage: $cpuUsage%" >> $OUT
+echo "[$TIME]: Disk Size: $diskSize" >> $OUT
+echo "[$TIME]: Disk Used: $diskUsed" >> $OUT
+echo "[$TIME]: Disk Avai: $diskAvail" >> $OUT

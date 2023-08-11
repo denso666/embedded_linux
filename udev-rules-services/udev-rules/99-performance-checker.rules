@@ -1,0 +1,5 @@
+# Trigger when a USB drive is plugged in
+SUBSYSTEM=="block", ACTION=="add", KERNEL=="sd[a-z][1-9]*", RUN+="/usr/sbin/usb_detect add %k"
+
+# Trigger when a USB drive is removed
+SUBSYSTEM=="block", ACTION=="remove", KERNEL=="sd[a-z][1-9]*", RUN+="/usr/sbin/usb_detect remove %k"
