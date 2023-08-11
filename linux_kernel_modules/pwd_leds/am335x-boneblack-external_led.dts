@@ -1,0 +1,48 @@
+/*
+	Overlay designed to BeagleBone Black board
+	Author: Felipe Alejandro Jimenez Castillo
+	Date: 27/06/2023
+*/
+
+/dts-v1/;
+/plugin/;
+
+#include <dt-bindings/gpio/gpio.h>
+#include <dt-bindings/pinctrl/am33xx.h>
+
+&{/chosen} {
+	overlays {
+		external_led.kernel = __TIMESTAMP__;
+	};
+};
+
+&{/} {
+	pwmleds {
+		compatible = "pwm-leds";
+		status = "okay";
+		led1 {
+			label = "external::led1";
+			pwms = <&ehrpwm2 0 5000 0>;
+			max-brightness = <255>;
+			brightness = <127>;
+			linux,default-trigger = "none";
+		};
+	};
+};
+
+&am33xx_pinmux {
+	backlight_pin1: backlight_pin1 {
+        pinctrl-single,pins = <
+			AM33XX_PADCONF(AM335X_PIN_LCD_DATA0, PIN_OUTPUT_PULLDOWN, MUX_MODE3)
+			AM33XX_PADCONF(AM335X_PIN_LCD_DATA1, PIN_OUTPUT_PULLDOWN, MUX_MODE3)
+		>;
+    };
+};
+&epwmss2 {
+    status = "okay";
+};
+&ehrpwm2 {
+    pinctrl-names = "default";
+    pinctrl-0 = <&backlight_pin1>;
+    status = "okay";
+};
